@@ -1,0 +1,40 @@
+name: codereviewplatform
+description: "AI-Powered Multi-Agent Code Review Platform Frontend App"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI and Icons
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.5.0
+  fl_chart: ^0.66.2
+
+  # Networking & HTTP
+  http: ^1.2.0
+  dio: ^5.4.1
+
+  # File handling
+  file_picker: ^8.0.0
+
+  # State Management
+  provider: ^6.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Assets configuration
+  # assets:
+  #   - assets/images/
