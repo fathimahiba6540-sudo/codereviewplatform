@@ -56,3 +56,6 @@ node_modules/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Auto-push watcher script
+auto-push.ps1

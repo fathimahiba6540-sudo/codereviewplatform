@@ -111,30 +111,30 @@ Build a full-stack AI-powered code review platform that allows developers to upl
 ## Phase 4: Data Processing and Code Ingestion
 
 ### 4.1 File Extraction and Normalization
-- [ ] Traverse project directories recursively
-- [ ] Exclude irrelevant folders (node_modules, .git, build output, venv, dist)
-- [ ] Identify supported source file types
-- [ ] Normalize file paths and names
-- [ ] Detect encoding and content issues
-- [ ] Prepare files for AI ingestion
+- [x] Traverse project directories recursively
+- [x] Exclude irrelevant folders (node_modules, .git, build output, venv, dist)
+- [x] Identify supported source file types
+- [x] Normalize file paths and names
+- [x] Detect encoding and content issues
+- [x] Prepare files for AI ingestion
 
 ### 4.2 Chunking and Vectorization
-- [ ] Implement chunking strategy per file
-- [ ] Split source code into logical chunks
-- [ ] Add chunk metadata (filename, language, line ranges)
-- [ ] Store chunks in FAISS or ChromaDB
-- [ ] Embed text chunks via chosen LLM embedding model
-- [ ] Create retrieval-ready indexes for code analysis
-- [ ] Add caching options to reduce repeated costs
-- [ ] Test chunking on multiple languages
+- [x] Implement chunking strategy per file
+- [x] Split source code into logical chunks
+- [x] Add chunk metadata (filename, language, line ranges)
+- [x] Store chunks in FAISS or ChromaDB
+- [x] Embed text chunks via chosen LLM embedding model
+- [x] Create retrieval-ready indexes for code analysis
+- [x] Add caching options to reduce repeated costs
+- [x] Test chunking on multiple languages
 
 ### 4.3 Project and File Services
-- [ ] Build service to enumerate project files
-- [ ] Build service to retrieve file text
-- [ ] Build service to summarize projects
-- [ ] Build service to generate file-level findings
-- [ ] Add validation for large repos and long processing time
-- [ ] Add project status updates: Ready for Review / In Progress / Completed
+- [x] Build service to enumerate project files
+- [x] Build service to retrieve file text
+- [x] Build service to summarize projects
+- [x] Build service to generate file-level findings
+- [x] Add validation for large repos and long processing time
+- [x] Add project status updates: Ready for Review / In Progress / Completed
 
 ---
 

@@ -1,6 +1,6 @@
 import uuid
 import enum
-from sqlalchemy import Column, String, Integer, ForeignKey, Enum, JSON, Index
+from sqlalchemy import Column, String, Integer, ForeignKey, Enum, JSON, Index, Boolean
 from sqlalchemy.orm import relationship
 from backend.app.database.session import Base
 from backend.app.models.base import TimestampMixin
@@ -15,6 +15,8 @@ class ProjectStatus(str, enum.Enum):
     PENDING = "PENDING"
     PROCESSING = "PROCESSING"
     COMPLETED = "COMPLETED"
+    READY_FOR_REVIEW = "READY_FOR_REVIEW"
+    INGESTING = "INGESTING"
     FAILED = "FAILED"
 
 
@@ -28,10 +30,16 @@ class Project(Base, TimestampMixin):
     source_type = Column(Enum(SourceType), nullable=False)
     github_url = Column(String, nullable=True)
     status = Column(Enum(ProjectStatus), default=ProjectStatus.PENDING, nullable=False, index=True)
-    
+
     total_files = Column(Integer, default=0, nullable=False)
     total_lines_of_code = Column(Integer, default=0, nullable=False)
     detected_languages = Column(JSON, default=list, nullable=False)
+
+    # Phase 4: Ingestion metadata
+    framework = Column(String, nullable=True)
+    total_chunks = Column(Integer, default=0, nullable=False)
+    is_vectorized = Column(Boolean, default=False, nullable=False)
+    ingestion_error = Column(String, nullable=True)
 
     # Relationships
     owner = relationship("User", back_populates="projects")

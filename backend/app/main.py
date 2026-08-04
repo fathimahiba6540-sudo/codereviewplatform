@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
 from backend.app.core.exceptions import AppException, app_exception_handler
 from backend.app.middleware.logging_middleware import LoggingMiddleware
-from backend.app.routers import health, auth, users, projects
+from backend.app.routers import health, auth, users, projects, ingestion
 from backend.app.database.init_db import init_db
 
 app = FastAPI(
@@ -35,6 +35,7 @@ app.include_router(health.router, prefix=settings.API_V1_STR)
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(users.router, prefix=settings.API_V1_STR)
 app.include_router(projects.router, prefix=settings.API_V1_STR)
+app.include_router(ingestion.router, prefix=settings.API_V1_STR)
 
 
 @app.on_event("startup")

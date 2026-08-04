@@ -115,3 +115,53 @@ class ProjectSummaryResponse(BaseModel):
     lines_of_code: int
     languages: List[str]
     recent_files: List[FileResponse] = []
+
+
+# Phase 4: Ingestion schemas
+class IngestionStatusResponse(BaseModel):
+    project_id: str
+    status: str
+    is_vectorized: bool
+    total_files: int
+    total_chunks: int
+    framework: Optional[str] = None
+    detected_languages: List[str] = []
+    ingestion_error: Optional[str] = None
+
+
+class FileBreakdownItem(BaseModel):
+    id: str
+    filename: str
+    file_path: str
+    language: str
+    line_count: int
+    file_size_bytes: int
+
+
+class ProjectFilesSummaryResponse(BaseModel):
+    project_id: str
+    title: str
+    framework: Optional[str] = None
+    total_files: int
+    total_lines_of_code: int
+    total_chunks: int
+    is_vectorized: bool
+    status: str
+    language_distribution: dict
+    files: List[FileBreakdownItem] = []
+
+
+class ChunkMetadata(BaseModel):
+    """Metadata attached to each vectorized code chunk — used by AI agents in Phase 5."""
+    chunk_id: str
+    project_id: str
+    file_id: Optional[str] = None
+    file_path: str
+    language: str
+    chunk_index: int
+    line_start: int
+    line_end: int
+    chunk_type: str
+    node_name: Optional[str] = None
+    node_type: Optional[str] = None
+
