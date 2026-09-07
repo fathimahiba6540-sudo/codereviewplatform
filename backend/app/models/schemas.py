@@ -74,6 +74,7 @@ class PasswordResetConfirm(BaseModel):
 class GitHubImportRequest(BaseModel):
     github_url: str = Field(..., example="https://github.com/fastapi/fastapi")
     title: Optional[str] = Field(None, min_length=1, max_length=100)
+    github_token: Optional[str] = Field(None, description="Optional GitHub Personal Access Token for private repositories")
 
 
 class FileResponse(BaseModel):
@@ -115,6 +116,7 @@ class ProjectSummaryResponse(BaseModel):
     lines_of_code: int
     languages: List[str]
     recent_files: List[FileResponse] = []
+    latest_review: Optional[dict] = None
 
 
 # Phase 4: Ingestion schemas
@@ -164,4 +166,66 @@ class ChunkMetadata(BaseModel):
     chunk_type: str
     node_name: Optional[str] = None
     node_type: Optional[str] = None
+
+
+# New Feature Schemas: Title-Only Project, Error Solver, Code Generator, PDF Exam Summarizer
+class TitleOnlyProjectRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    language: Optional[str] = Field("python", description="Target programming language or tech stack")
+
+
+class ErrorSolverRequest(BaseModel):
+    code: str = Field(..., description="Source code to analyze for bugs and errors")
+    error_log: Optional[str] = Field(None, description="Optional error log or exception stack trace")
+    language: Optional[str] = Field("python", description="Programming language of the snippet")
+
+
+class ErrorSolverResponse(BaseModel):
+    error_summary: str
+    root_cause: str
+    corrected_code: str
+    explanation: str
+    prevention_tips: List[str] = []
+
+
+class CodeGeneratorRequest(BaseModel):
+    prompt: str = Field(..., description="Requirement or description of code to generate")
+    language: Optional[str] = Field("python", description="Target programming language")
+    framework: Optional[str] = Field(None, description="Optional target framework (e.g. FastAPI, React, Flask)")
+    title: Optional[str] = Field(None, description="Optional title if creating a project")
+
+
+class CodeGeneratorResponse(BaseModel):
+    title: str
+    language: str
+    generated_code: str
+    explanation: str
+    file_name: str
+
+
+class PDFSummaryResponse(BaseModel):
+    combined_title: str
+    total_pdfs_processed: int
+    total_pages: int
+    executive_summary: str
+    high_yield_topics: List[dict] = []
+    definitions_and_formulas: List[dict] = []
+    exam_questions: List[dict] = []
+    cheatsheet_markdown: str
+    bundle_id: Optional[str] = None
+
+
+class DoubtRequest(BaseModel):
+    query: str = Field(..., description="Student or teacher doubt or question")
+    code_context: Optional[str] = Field(None, description="Optional code snippet attached to the question")
+    chat_history: List[dict] = Field([], description="Previous conversation turns for context")
+
+
+class DoubtResponse(BaseModel):
+    answer: str
+    key_takeaways: List[str] = []
+    related_topics: List[str] = []
+
+
 

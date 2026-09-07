@@ -9,6 +9,7 @@ from backend.app.models.base import TimestampMixin
 class SourceType(str, enum.Enum):
     ZIP = "ZIP"
     GITHUB = "GITHUB"
+    TITLE_ONLY = "TITLE_ONLY"
 
 
 class ProjectStatus(str, enum.Enum):

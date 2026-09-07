@@ -36,6 +36,59 @@ class ProjectService:
         return project
 
     @classmethod
+    def create_project_from_title(
+        cls,
+        db: Session,
+        user_id: str,
+        title: str,
+        description: Optional[str] = None,
+        language: Optional[str] = "python"
+    ) -> Project:
+        """Create project record from Title only, generate boilerplate starter code files, and ingest repository."""
+        project = cls.create_project(
+            db=db,
+            user_id=user_id,
+            title=title,
+            source_type=SourceType.TITLE_ONLY
+        )
+
+        project_dir = os.path.join(settings.UPLOAD_DIR, project.id)
+        os.makedirs(project_dir, exist_ok=True)
+
+        lang = (language or "python").lower().strip()
+        desc_text = description or f"A project implementation for {title}."
+
+        # Create README.md
+        readme_content = f"# {title}\n\n{desc_text}\n\n## Structure\nGenerated starter boilerplate repository.\n"
+        with open(os.path.join(project_dir, "README.md"), "w", encoding="utf-8") as f:
+            f.write(readme_content)
+
+        if lang in ["python", "py"]:
+            main_code = f'"""\n{title}\n{desc_text}\n"""\n\ndef main():\n    print("Starting {title}...")\n    # TODO: Implement project requirements here\n\nif __name__ == "__main__":\n    main()\n'
+            utils_code = f'"""\nUtility functions for {title}\n"""\n\ndef helper_function(data):\n    """Helper function docstring."""\n    return data\n'
+            with open(os.path.join(project_dir, "main.py"), "w", encoding="utf-8") as f:
+                f.write(main_code)
+            with open(os.path.join(project_dir, "utils.py"), "w", encoding="utf-8") as f:
+                f.write(utils_code)
+        elif lang in ["html", "javascript", "js", "web"]:
+            html_code = f'<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>{title}</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <h1>{title}</h1>\n  <p>{desc_text}</p>\n  <script src="app.js"></script>\n</body>\n</html>'
+            css_code = 'body {\n  font-family: sans-serif;\n  background-color: #0f172a;\n  color: #f8fafc;\n  padding: 2rem;\n}'
+            js_code = f'console.log("Initialized {title}");'
+            with open(os.path.join(project_dir, "index.html"), "w", encoding="utf-8") as f:
+                f.write(html_code)
+            with open(os.path.join(project_dir, "style.css"), "w", encoding="utf-8") as f:
+                f.write(css_code)
+            with open(os.path.join(project_dir, "app.js"), "w", encoding="utf-8") as f:
+                f.write(js_code)
+        else:
+            code = f'// {title}\n// {desc_text}\n\n#include <iostream>\n\nint main() {{\n    std::cout << "Running {title}" << std::endl;\n    return 0;\n}}\n'
+            with open(os.path.join(project_dir, "main.cpp"), "w", encoding="utf-8") as f:
+                f.write(code)
+
+        # Process and save parsed repository metadata
+        return cls.process_and_save_repository(db, project.id, project_dir)
+
+    @classmethod
     def process_and_save_repository(
         cls,
         db: Session,

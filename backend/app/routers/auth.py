@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from backend.app.database.session import get_db
@@ -67,20 +67,42 @@ def register_user(
 
 @router.post(
     "/login",
-    response_model=Token,
     summary="User authentication login endpoint"
 )
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+async def login(
+    request: Request,
     db: Session = Depends(get_db)
 ):
-    """Authenticate user with username/email and password, returning JWT token."""
+    """Authenticate user with username/email and password via JSON body or Form data."""
+    username_or_email = None
+    password = None
+
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        try:
+            body = await request.json()
+            username_or_email = body.get("username_or_email") or body.get("username")
+            password = body.get("password")
+        except Exception:
+            pass
+    
+    if not username_or_email or not password:
+        try:
+            form = await request.form()
+            username_or_email = form.get("username") or form.get("username_or_email")
+            password = form.get("password")
+        except Exception:
+            pass
+
+    if not username_or_email or not password:
+        raise CredentialsException(message="Username/email and password are required")
+
     # Query by username or email
     user = db.query(User).filter(
-        (User.username == form_data.username) | (User.email == form_data.username)
+        (User.username == username_or_email) | (User.email == username_or_email)
     ).first()
 
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not verify_password(password, user.hashed_password):
         raise CredentialsException(message="Incorrect username/email or password")
     
     if not user.is_active:
@@ -92,11 +114,20 @@ def login(
         expires_delta=access_token_expires
     )
 
-    return Token(
-        access_token=token,
-        token_type="bearer",
-        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    )
+    expires_in_sec = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    token_dict = {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in": expires_in_sec
+    }
+
+    return {
+        "success": True,
+        "message": "Authentication successful",
+        "data": token_dict,
+        **token_dict
+    }
+
 
 
 @router.post(

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Code Review Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Header / Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo" onclick="showSection('dashboardSection')">
+        <i class="fa-solid fa-wand-magic-sparkles logo-icon"></i>
+        <span>AI EduCode Suite</span>
+      </div>
+      <nav class="nav-links" id="mainNavLinks">
+        <a id="navLinkProjects" class="nav-link active" onclick="showSection('dashboardSection')"><i class="fa-solid fa-folder-tree"></i> Projects</a>
+        <a id="navLinkSolver" class="nav-link" onclick="showSection('solverSection')"><i class="fa-solid fa-bug-slash"></i> Error Solver</a>
+        <a id="navLinkGenerator" class="nav-link" onclick="showSection('generatorSection')"><i class="fa-solid fa-code"></i> AI Code Studio</a>
+        <a id="navLinkPdf" class="nav-link" onclick="showSection('pdfSection')"><i class="fa-solid fa-file-pdf"></i> PDF Exam Summarizer</a>
+        <a id="navLinkDoubt" class="nav-link" onclick="showSection('doubtSection')"><i class="fa-solid fa-graduation-cap text-teal"></i> AI Tutor</a>
+        <a id="navLinkProfile" class="nav-link" onclick="showSection('profileSection')"><i class="fa-solid fa-user-circle"></i> Profile</a>
+      </nav>
+      <div class="nav-actions" id="navActions">
+        <!-- Notification Bell -->
+        <div class="notif-wrapper" id="notifWrapper">
+          <button class="notif-bell-btn" id="notifBellBtn" onclick="toggleNotifDropdown()" title="Notifications">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notif-badge hidden" id="notifBadge">0</span>
+          </button>
+          <div class="notif-dropdown hidden" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <span><i class="fa-solid fa-bell text-indigo"></i> Notifications</span>
+              <button class="btn btn-sm btn-outline" onclick="markAllNotifsRead()" style="font-size:11px;padding:4px 10px;">Mark all read</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <div class="notif-empty"><i class="fa-solid fa-bell-slash"></i>No notifications yet</div>
+            </div>
+          </div>
+        </div>
+        <div id="userInfo" class="user-pill hidden">
+          <i class="fa-solid fa-circle-user text-indigo"></i>
+          <span id="usernameDisplay">Student</span>
+          <button id="logoutBtn" class="btn btn-sm btn-logout" onclick="handleLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- View 1: Auth Screen (Login / Register) -->
+    <section id="authSection" class="auth-wrapper">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="auth-badge"><i class="fa-solid fa-graduation-cap"></i> AI Educator & Multi-Agent Code Suite</div>
+          <h2>Welcome to AI Code Reviewer & Educator</h2>
+          <p>Detect & solve errors, generate custom code, summarize PDF course bundles for exams, and run multi-agent code audits.</p>
+        </div>
+
+        <div class="auth-tabs">
+          <button class="tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Log In</button>
+          <button class="tab-btn" id="tabRegisterBtn" onclick="switchAuthTab('register')">Register New Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form">
+          <div class="form-group">
+            <label><i class="fa-solid fa-user"></i> Username or Email</label>
+            <input type="text" id="loginUsername" placeholder="e.g. student or student@school.edu" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-key"></i> Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-right-to-bracket"></i> Log In to Platform</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" class="auth-form hidden">
+          <div class="form-group">
+            <label><i class="fa-solid fa-envelope"></i> Email Address</label>
+            <input type="email" id="regEmail" placeholder="e.g. student@school.edu" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-user"></i> Choose Username</label>
+            <input type="text" id="regUsername" placeholder="e.g. student123" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-lock"></i> Create Password</label>
+            <input type="password" id="regPassword" placeholder="Choose a password" required>
+          </div>
+          <button type="submit" class="btn btn-success btn-block"><i class="fa-solid fa-user-plus"></i> Create Free Account</button>
+        </form>
+
+        <div id="authAlert" class="alert hidden"></div>
+      </div>
+    </section>
+
+    <!-- View 2: Dashboard Screen -->
+    <section id="dashboardSection" class="dashboard-wrapper hidden">
+      <div class="dash-top">
+        <div>
+          <h1 class="welcome-title">Welcome back, <span id="dashUser">Student</span>! 👋</h1>
+          <p class="welcome-sub">Create a new project from a title, paste code to solve errors, summarize study PDFs, or run an AI audit.</p>
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="openModal('uploadModal')">
+          <i class="fa-solid fa-plus"></i> Create / Import Project
+        </button>
+      </div>
+
+      <div id="projectsGrid" class="projects-grid">
+        <!-- Projects loaded dynamically here -->
+      </div>
+    </section>
+
+    <!-- View 3: Review Report View -->
+    <section id="reportSection" class="report-wrapper hidden">
+      <div class="report-header">
+        <button class="btn btn-outline btn-sm" onclick="showDashboard()"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+        <div class="report-title-area">
+          <h2 id="reportProjectTitle">Project Review</h2>
+          <span id="reportProjectMeta" class="meta-tag">Python • 12 Files • 1,240 LOC</span>
+        </div>
+        <button id="reRunReviewBtn" class="btn btn-secondary btn-sm" onclick="triggerReview()"><i class="fa-solid fa-rotate-right"></i> Re-Run AI Audit</button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="reviewLoading" class="review-loading hidden">
+        <div class="spinner"></div>
+        <h3>Executing 7 AI Review Agents...</h3>
+        <p>Analyzing Security Vulnerabilities, Runtime Bugs, Maintainability, Documentation & Unit Tests</p>
+      </div>
+
+      <!-- Main Report Content -->
+      <div id="reviewContent" class="review-content">
+        <!-- Top Score Banner -->
+        <div class="score-banner">
+          <div class="grade-circle-wrap">
+            <div id="gradeCircle" class="grade-circle grade-A">A+</div>
+          </div>
+          <div class="score-info">
+            <h3 id="overallScoreText">Overall Quality Grade: A+ (94/100)</h3>
+            <p id="overallSummary">Consolidated findings across 7 multi-agent review sub-systems.</p>
+          </div>
+        </div>
+
+        <!-- 4 Score Cards -->
+        <div class="score-cards-grid">
+          <div class="score-card sec">
+            <div class="sc-header"><i class="fa-solid fa-shield-cat"></i> Security</div>
+            <div id="scoreSec" class="sc-val">95%</div>
+            <div class="sc-bar"><div id="barSec" class="sc-fill sec-bg" style="width:95%"></div></div>
+          </div>
+          <div class="score-card maint">
+            <div class="sc-header"><i class="fa-solid fa-wrench"></i> Maintainability</div>
+            <div id="scoreMaint" class="sc-val">90%</div>
+            <div class="sc-bar"><div id="barMaint" class="sc-fill maint-bg" style="width:90%"></div></div>
+          </div>
+          <div class="score-card perf">
+            <div class="sc-header"><i class="fa-solid fa-gauge-high"></i> Performance</div>
+            <div id="scorePerf" class="sc-val">88%</div>
+            <div class="sc-bar"><div id="barPerf" class="sc-fill perf-bg" style="width:88%"></div></div>
+          </div>
+          <div class="score-card read">
+            <div class="sc-header"><i class="fa-solid fa-book-open-reader"></i> Readability</div>
+            <div id="scoreRead" class="sc-val">92%</div>
+            <div class="sc-bar"><div id="barRead" class="sc-fill read-bg" style="width:92%"></div></div>
+          </div>
+        </div>
+
+        <!-- Report Tabs -->
+        <div class="report-tabs">
+          <button class="rep-tab active" onclick="switchReportTab('findings')"><i class="fa-solid fa-bug"></i> Findings & Bugs (<span id="countFindings">0</span>)</button>
+          <button class="rep-tab" onclick="switchReportTab('docs')"><i class="fa-solid fa-file-lines"></i> Project Documentation</button>
+          <button class="rep-tab" onclick="switchReportTab('tests')"><i class="fa-solid fa-flask"></i> Generated Unit Tests (<span id="countTests">0</span>)</button>
+        </div>
+
+        <!-- Tab 1: Findings -->
+        <div id="tabFindings" class="rep-tab-content">
+          <div id="findingsList" class="findings-list">
+            <!-- Findings loaded here -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Documentation -->
+        <div id="tabDocs" class="rep-tab-content hidden">
+          <div class="docs-container">
+            <div class="docs-actions">
+              <h4>Auto-Generated Project Documentation</h4>
+            </div>
+            <pre><code id="docsMarkdown">Loading documentation...</code></pre>
+          </div>
+        </div>
+
+        <!-- Tab 3: Unit Tests -->
+        <div id="tabTests" class="rep-tab-content hidden">
+          <div id="testsList" class="tests-list">
+            <!-- Test cases loaded here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 4: AI Error Detector & Solver -->
+    <section id="solverSection" class="tool-wrapper hidden">
+      <div class="tool-header">
+        <h2><i class="fa-solid fa-bug-slash text-indigo"></i> Interactive AI Error Detector & Solver</h2>
+        <p>Paste code or exception stack traces to detect bugs, understand root causes, and get step-by-step solutions.</p>
+      </div>
+
+      <div class="tool-grid">
+        <!-- Input Panel -->
+        <div class="tool-panel input-panel">
+          <div class="form-group">
+            <label><i class="fa-solid fa-code"></i> Source Code Snippet</label>
+            <textarea id="solverCode" rows="8" placeholder="Paste your code snippet here... e.g.
+def calculate_average(nums):
+    total = sum(nums)
+    return total / len(nums)"></textarea>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-terminal"></i> Error Log / Stack Trace (Optional)</label>
+            <textarea id="solverErrorLog" rows="4" placeholder="e.g. ZeroDivisionError: division by zero or SyntaxError..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group col">
+              <label>Programming Language</label>
+              <select id="solverLang">
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript / Node</option>
+                <option value="html">HTML / CSS</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+              </select>
+            </div>
+          </div>
+          <button id="solveBtn" class="btn btn-primary btn-block btn-lg" onclick="handleSolveError()">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Detect Bugs & Solve Error
+          </button>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="tool-panel output-panel">
+          <div id="solverLoading" class="tool-loading hidden">
+            <div class="spinner"></div>
+            <p>Analyzing code structure & stack trace...</p>
+          </div>
+
+          <div id="solverPlaceholder" class="tool-placeholder">
+            <i class="fa-solid fa-shield-cat placeholder-icon"></i>
+            <h4>Ready to Debug Code</h4>
+            <p>Paste code on the left and click "Detect Bugs & Solve Error" to view root cause & fixed code.</p>
+          </div>
+
+          <div id="solverResult" class="tool-result hidden">
+            <div id="solverSummaryBadge" class="summary-badge warning">
+              <i class="fa-solid fa-circle-exclamation"></i> <span id="solverSummaryText">Zero Division Bug</span>
+            </div>
+
+            <div class="res-box">
+              <label class="res-label"><i class="fa-solid fa-circle-info"></i> Root Cause & Explanation</label>
+              <div id="solverCause" class="res-text"></div>
+            </div>
+
+            <div class="res-box">
+              <div class="res-label-row">
+                <label class="res-label"><i class="fa-solid fa-check-double text-success"></i> Fixed & Corrected Code</label>
+                <div class="res-actions">
+                  <button class="btn btn-sm btn-outline" onclick="copySolverCode()"><i class="fa-solid fa-copy"></i> Copy Code</button>
+                  <button class="btn btn-sm btn-success" onclick="createProjectFromSolver()"><i class="fa-solid fa-folder-plus"></i> Save as Project</button>
+                </div>
+              </div>
+              <pre><code id="solverCorrectedCode"></code></pre>
+            </div>
+
+            <div class="res-box">
+              <label class="res-label"><i class="fa-solid fa-lightbulb text-warning"></i> Prevention & Best Practices</label>
+              <ul id="solverTips" class="tips-list"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 5: AI Code Studio / Generator -->
+    <section id="generatorSection" class="tool-wrapper hidden">
+      <div class="tool-header">
+        <h2><i class="fa-solid fa-code text-purple"></i> AI Code Studio & Solution Generator</h2>
+        <p>Describe what project or algorithm you need, and AI will generate working code with complete explanations.</p>
+      </div>
+
+      <div class="tool-grid">
+        <!-- Input Panel -->
+        <div class="tool-panel input-panel">
+          <div class="form-group">
+            <label><i class="fa-solid fa-pen-to-square"></i> Project Requirement / Code Prompt</label>
+            <textarea id="genPrompt" rows="6" placeholder="Describe what you want to create... e.g.
+'Write a Python script using FastAPI to manage student grades with endpoints for add, delete, and list grades.'"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group col">
+              <label>Target Language</label>
+              <select id="genLang">
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript / Node</option>
+                <option value="html">HTML / CSS / JS</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+              </select>
+            </div>
+            <div class="form-group col">
+              <label>Framework (Optional)</label>
+              <input type="text" id="genFramework" placeholder="e.g. FastAPI, React, Flask">
+            </div>
+          </div>
+          <button id="generateBtn" class="btn btn-purple btn-block btn-lg" onclick="handleGenerateCode()">
+            <i class="fa-solid fa-bolt"></i> Generate Code Solution
+          </button>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="tool-panel output-panel">
+          <div id="genLoading" class="tool-loading hidden">
+            <div class="spinner"></div>
+            <p>Architecting & generating production-ready code...</p>
+          </div>
+
+          <div id="genPlaceholder" class="tool-placeholder">
+            <i class="fa-solid fa-laptop-code placeholder-icon text-purple"></i>
+            <h4>AI Code Studio Ready</h4>
+            <p>Enter your requirement prompt and click "Generate Code Solution".</p>
+          </div>
+
+          <div id="genResult" class="tool-result hidden">
+            <div class="res-label-row">
+              <div class="res-title-wrap">
+                <h3 id="genTitle">Generated Code</h3>
+                <span id="genFileTag" class="meta-tag">main.py</span>
+              </div>
+              <div class="res-actions">
+                <button class="btn btn-sm btn-outline" onclick="copyGenCode()"><i class="fa-solid fa-copy"></i> Copy Code</button>
+                <button class="btn btn-sm btn-primary" onclick="createProjectFromGenerator()"><i class="fa-solid fa-folder-plus"></i> Create Project</button>
+              </div>
+            </div>
+
+            <pre><code id="genOutputCode"></code></pre>
+
+            <div class="res-box mt-3">
+              <label class="res-label"><i class="fa-solid fa-book text-indigo"></i> Code Explanation & Execution Guide</label>
+              <div id="genExplanation" class="res-text"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 6: PDF Bundle Processor & Exam Summarizer -->
+    <section id="pdfSection" class="tool-wrapper hidden">
+      <div class="tool-header">
+        <h2><i class="fa-solid fa-file-pdf text-red"></i> PDF Bundle & Exam-Oriented Summarizer</h2>
+        <p>Upload a single PDF or a bundle of multiple PDFs (lecture slides, books, past papers) to combine them and generate high-yield exam summaries.</p>
+      </div>
+
+      <!-- Upload Dropzone Panel -->
+      <div class="pdf-upload-card">
+        <div class="dropzone" id="pdfDropzone" onclick="document.getElementById('pdfFileInput').click()">
+          <i class="fa-solid fa-cloud-arrow-up drop-icon text-red"></i>
+          <h3>Click or Drag & Drop PDF Documents Here</h3>
+          <p>Upload multiple PDF course materials, lecture notes, or textbooks</p>
+          <input type="file" id="pdfFileInput" accept=".pdf" multiple class="hidden" onchange="handlePdfFilesSelect(event)">
+        </div>
+
+        <div id="pdfFileList" class="pdf-file-list hidden">
+          <!-- Selected PDF tags will be listed here -->
+        </div>
+
+        <div class="pdf-action-bar">
+          <button id="pdfSummarizeBtn" class="btn btn-danger btn-lg disabled" onclick="handleSummarizePdfBundle()" disabled>
+            <i class="fa-solid fa-layer-group"></i> Combine & Generate Exam Summary
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="pdfLoading" class="review-loading hidden">
+        <div class="spinner"></div>
+        <h3>Combining PDFs & Synthesizing Exam Summary...</h3>
+        <p>Extracting text from all uploaded documents, merging bundle pages, and identifying high-yield exam topics & definitions.</p>
+      </div>
+
+      <!-- Summary Results Container -->
+      <div id="pdfResult" class="pdf-result-wrapper hidden">
+        <div class="pdf-meta-banner">
+          <div>
+            <h3 id="pdfBundleTitle">Combined Study Bundle Summary</h3>
+            <p id="pdfBundleMeta" class="meta-tag red">2 PDFs Processed • 48 Total Pages</p>
+          </div>
+          <button id="downloadMergedPdfBtn" class="btn btn-outline-danger btn-sm" onclick="downloadMergedPdf()">
+            <i class="fa-solid fa-file-arrow-down"></i> Download Merged PDF Bundle
+          </button>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="card-box">
+          <h4><i class="fa-solid fa-align-left text-indigo"></i> Executive Scope & Overview</h4>
+          <p id="pdfExecutiveSummary">High level overview of course topics...</p>
+        </div>
+
+        <!-- Exam Summary Sub-Tabs -->
+        <div class="report-tabs">
+          <button class="pdf-tab active" onclick="switchPdfTab('topics')"><i class="fa-solid fa-fire text-orange"></i> High-Yield Exam Topics</button>
+          <button class="pdf-tab" onclick="switchPdfTab('defs')"><i class="fa-solid fa-book-bookmark text-blue"></i> Definitions & Formulas</button>
+          <button class="pdf-tab" onclick="switchPdfTab('questions')"><i class="fa-solid fa-circle-question text-purple"></i> Expected Exam Questions</button>
+          <button class="pdf-tab" onclick="switchPdfTab('cheatsheet')"><i class="fa-solid fa-bolt text-warning"></i> Quick Cheatsheet</button>
+        </div>
+
+        <!-- PDF Tab 1: High Yield Topics -->
+        <div id="pdfTabTopics" class="rep-tab-content">
+          <div id="pdfTopicsList" class="topics-grid">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- PDF Tab 2: Definitions -->
+        <div id="pdfTabDefs" class="rep-tab-content hidden">
+          <div id="pdfDefsList" class="defs-grid">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- PDF Tab 3: Exam Questions -->
+        <div id="pdfTabQuestions" class="rep-tab-content hidden">
+          <div id="pdfQuestionsList" class="questions-list">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- PDF Tab 4: Cheatsheet -->
+        <div id="pdfTabCheatsheet" class="rep-tab-content hidden">
+          <div class="docs-container">
+            <pre><code id="pdfCheatsheetMarkdown">Loading cheatsheet...</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments Panel -->
+      <div class="comments-panel" id="commentsPanel">
+        <div class="comments-header">
+          <h4><i class="fa-solid fa-comments text-indigo"></i> Review Comments <span id="commentCount" style="font-size:12px;font-weight:500;color:var(--text-muted);"></span></h4>
+          <button class="btn btn-sm btn-outline" onclick="loadComments()" title="Refresh comments">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          </button>
+        </div>
+        <div class="comments-list" id="commentsList">
+          <div class="comments-empty">Load the report to see comments.</div>
+        </div>
+        <div class="comment-input-area">
+          <div class="comment-meta-row">
+            <input type="text" id="commentFilePath" placeholder="File path (optional, e.g. main.py)">
+            <input type="text" id="commentLineNum" placeholder="Line number (optional, e.g. 42)">
+          </div>
+          <div class="comment-input-row">
+            <textarea id="commentText" placeholder="Add a review comment, suggestion, or note on this codebase..."></textarea>
+            <button class="btn btn-primary" onclick="submitComment()" id="submitCommentBtn" style="flex-shrink:0;height:60px;">
+              <i class="fa-solid fa-paper-plane"></i> Post
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 7: 24/7 AI Tutor & Instant Doubt Clearing Agent -->
+    <section id="doubtSection" class="tool-wrapper hidden">
+      <div class="tool-header">
+        <h2><i class="fa-solid fa-graduation-cap text-teal"></i> 24/7 AI Computer Science Tutor</h2>
+        <p>Ask any programming, algorithm, computer science, or exam doubt for instant step-by-step explanations.</p>
+      </div>
+
+      <div class="doubt-layout">
+        <!-- Main Chat Box -->
+        <div class="chat-card">
+          <!-- Chat Messages Thread -->
+          <div id="chatThread" class="chat-thread">
+            <div class="chat-msg ai">
+              <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+              <div class="msg-content">
+                <p>👋 Hello! I am your 24/7 AI Computer Science Tutor. What doubt can I help you clear today?</p>
+                <div class="chip-row mt-2">
+                  <button class="chip-btn" onclick="sendQuickDoubt('Explain recursion vs iteration with an example')">💡 Recursion vs Iteration</button>
+                  <button class="chip-btn" onclick="sendQuickDoubt('How does Binary Search Tree work?')">❓ Binary Search Tree</button>
+                  <button class="chip-btn" onclick="sendQuickDoubt('Why do I get IndexError in Python lists?')">🛠️ Python IndexError</button>
+                  <button class="chip-btn" onclick="sendQuickDoubt('Explain time & space complexity of Quicksort')">📝 Quicksort Big-O</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Context Collapsible (Optional) -->
+          <div id="doubtCodeWrap" class="doubt-code-wrap hidden">
+            <label class="res-label"><i class="fa-solid fa-code"></i> Attached Code Context</label>
+            <textarea id="doubtCodeContext" rows="3" placeholder="Paste optional code context here..."></textarea>
+          </div>
+
+          <!-- Input Bar -->
+          <div class="chat-input-bar">
+            <button class="btn btn-sm btn-outline" onclick="toggleDoubtCodeContext()" title="Attach Code Context">
+              <i class="fa-solid fa-code"></i>
+            </button>
+            <input type="text" id="doubtInput" placeholder="Type your doubt or question here... (e.g. How does Dijkstra algorithm work?)" onkeydown="if(event.key === 'Enter') handleSendDoubt()">
+            <button id="sendDoubtBtn" class="btn btn-teal" onclick="handleSendDoubt()">
+              <i class="fa-solid fa-paper-plane"></i> Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 8: User Profile & Settings -->
+    <section id="profileSection" class="hidden" style="padding: 8px 0;">
+      <div class="profile-wrapper">
+        <!-- Hero Card -->
+        <div class="profile-hero">
+          <div class="profile-avatar" id="profileAvatar">S</div>
+          <div class="profile-info">
+            <h2 id="profileName">Student User</h2>
+            <p id="profileEmail">student@platform.edu</p>
+            <div class="profile-badges">
+              <span class="profile-badge"><i class="fa-solid fa-circle-check"></i> Active Account</span>
+              <span class="profile-badge" id="profileRoleBadge"><i class="fa-solid fa-user-graduate"></i> Member</span>
+              <span class="profile-badge" id="profileSinceBadge"><i class="fa-solid fa-calendar"></i> Member since —</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="profile-card">
+          <h3><i class="fa-solid fa-chart-bar text-indigo"></i> Your Activity Summary</h3>
+          <div class="profile-stats-grid">
+            <div class="pstat-card">
+              <div class="pstat-val" id="statProjects">—</div>
+              <div class="pstat-label">Projects Imported</div>
+            </div>
+            <div class="pstat-card">
+              <div class="pstat-val" id="statReviews">—</div>
+              <div class="pstat-label">AI Reviews Run</div>
+            </div>
+            <div class="pstat-card">
+              <div class="pstat-val" id="statComments">0</div>
+              <div class="pstat-label">Comments Posted</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Profile Form -->
+        <div class="profile-card">
+          <h3><i class="fa-solid fa-pen-to-square text-indigo"></i> Edit Profile</h3>
+          <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+            <div class="profile-form-grid">
+              <div class="form-group">
+                <label><i class="fa-solid fa-user"></i> Username</label>
+                <input type="text" id="profileUsername" placeholder="Your username" minlength="3" maxlength="50">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-envelope"></i> Email Address</label>
+                <input type="email" id="profileEmailInput" placeholder="your@email.com">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-lock"></i> New Password</label>
+                <input type="password" id="profileNewPassword" placeholder="Leave blank to keep current" minlength="8">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-lock"></i> Confirm New Password</label>
+                <input type="password" id="profileConfirmPassword" placeholder="Repeat new password">
+              </div>
+            </div>
+            <div id="profileAlert" class="profile-alert"></div>
+            <div style="margin-top:20px; display:flex; gap:12px;">
+              <button type="submit" class="btn btn-primary" id="profileSaveBtn">
+                <i class="fa-solid fa-floppy-disk"></i> Save Changes
+              </button>
+              <button type="button" class="btn btn-outline" onclick="showSection('dashboardSection')">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="profile-card" style="border-color: rgba(239,68,68,0.3);">
+          <h3 style="color:#FCA5A5;"><i class="fa-solid fa-triangle-exclamation"></i> Session & Account</h3>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="btn btn-outline" style="border-color:rgba(239,68,68,0.4);color:#FCA5A5;" onclick="handleLogout()">
+              <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Floating Action Button (FAB) for Instant AI Doubt Assistant -->
+  <div id="doubtFab" class="fab-container" onclick="showSection('doubtSection')">
+    <div class="fab-btn">
+      <i class="fa-solid fa-comments"></i>
+      <span class="fab-text">Ask AI Tutor</span>
+    </div>
+  </div>
+
+  <!-- Upload / Create Project Modal -->
+  <div id="uploadModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-folder-plus"></i> Create or Import Project</h3>
+        <button class="close-btn" onclick="closeModal('uploadModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="import-tabs">
+          <button id="importTabTitle" class="tab-btn active" onclick="switchImportTab('title')"><i class="fa-solid fa-heading"></i> Project Title Only</button>
+          <button id="importTabGithub" class="tab-btn" onclick="switchImportTab('github')"><i class="fa-brands fa-github"></i> Public GitHub Repo</button>
+          <button id="importTabZip" class="tab-btn" onclick="switchImportTab('zip')"><i class="fa-solid fa-file-zipper"></i> ZIP File Archive</button>
+        </div>
+
+        <!-- Title Only Form (NEW) -->
+        <form id="titleForm" class="import-form">
+          <div class="form-group">
+            <label>Project Title (Required)</label>
+            <input type="text" id="titleProjectTitle" placeholder="e.g. Student Grade Management System" required>
+            <span class="help-text">Enter the project name to generate starter codebase</span>
+          </div>
+          <div class="form-group">
+            <label>Description / Implementation Goals (Optional)</label>
+            <textarea id="titleDescription" rows="3" placeholder="e.g. A system to manage students, calculate GPAs, and export reports"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Target Language / Tech Stack</label>
+            <select id="titleLanguage">
+              <option value="python">Python</option>
+              <option value="javascript">JavaScript / Node</option>
+              <option value="html">HTML / CSS / JS</option>
+              <option value="cpp">C++</option>
+              <option value="java">Java</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-wand-magic-sparkles"></i> Create & Generate Project Codebase</button>
+        </form>
+
+        <!-- GitHub Form -->
+        <form id="githubForm" class="import-form hidden">
+          <div class="form-group">
+            <label>GitHub Repository URL</label>
+            <input type="url" id="githubUrl" placeholder="https://github.com/facebook/react or https://github.com/username/repository" required>
+            <span class="help-text">Paste any public GitHub repository web link</span>
+          </div>
+          <div class="form-group">
+            <label>Project Title (Optional)</label>
+            <input type="text" id="githubTitle" placeholder="e.g. React Frontend Engine">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-download"></i> Import & Parse Repository</button>
+        </form>
+
+        <!-- ZIP Form -->
+        <form id="zipForm" class="import-form hidden">
+          <div class="form-group">
+            <label>Project Title (Optional)</label>
+            <input type="text" id="zipTitle" placeholder="e.g. My Coursework Assignment">
+          </div>
+          <div class="form-group">
+            <label>Select .ZIP Archive File</label>
+            <input type="file" id="zipFileInput" accept=".zip" required>
+            <span class="help-text">Upload source code ZIP file (up to 50 MB)</span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-upload"></i> Upload & Process ZIP</button>
+        </form>
+
+        <div id="importAlert" class="alert hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

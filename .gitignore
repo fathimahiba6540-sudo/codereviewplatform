@@ -57,5 +57,6 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Auto-push watcher script
-auto-push.ps1
+# GitHub Actions / Workflows
+.github/
+

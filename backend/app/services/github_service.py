@@ -28,10 +28,12 @@ class GitHubService:
         return owner, repo
 
     @classmethod
-    async def fetch_repo_metadata(cls, owner: str, repo: str) -> Dict[str, Any]:
-        """Fetch public repository metadata using GitHub REST API."""
+    async def fetch_repo_metadata(cls, owner: str, repo: str, access_token: str = None) -> Dict[str, Any]:
+        """Fetch repository metadata using GitHub REST API with optional auth token for private repos."""
         api_url = f"https://api.github.com/repos/{owner}/{repo}"
         headers = {"User-Agent": "AICodeReviewPlatform/1.0"}
+        if access_token:
+            headers["Authorization"] = f"token {access_token}"
         
         async with httpx.AsyncClient(timeout=15.0) as client:
             response = await client.get(api_url, headers=headers)
@@ -63,10 +65,12 @@ class GitHubService:
             }
 
     @classmethod
-    async def download_and_extract_repo(cls, owner: str, repo: str, extract_to_dir: str) -> str:
-        """Download public repository zip archive from GitHub and extract safely."""
+    async def download_and_extract_repo(cls, owner: str, repo: str, extract_to_dir: str, access_token: str = None) -> str:
+        """Download repository zip archive from GitHub and extract safely."""
         download_url = f"https://api.github.com/repos/{owner}/{repo}/zipball"
         headers = {"User-Agent": "AICodeReviewPlatform/1.0"}
+        if access_token:
+            headers["Authorization"] = f"token {access_token}"
 
         async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
             response = await client.get(download_url, headers=headers)

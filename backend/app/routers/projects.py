@@ -13,14 +13,48 @@ from backend.app.models.schemas import (
     ProjectResponse,
     ProjectSummaryResponse,
     FileResponse,
-    GitHubImportRequest
+    GitHubImportRequest,
+    TitleOnlyProjectRequest
 )
 from backend.app.services.zip_service import ZipService
 from backend.app.services.github_service import GitHubService
 from backend.app.services.project_service import ProjectService
 from backend.app.services.repo_parser import RepoParser
+from backend.app.services.review_service import ReviewService
 
 router = APIRouter(prefix="/projects", tags=["Projects & Repository Imports"])
+
+
+@router.post(
+    "/create-title",
+    response_model=APIResponse[ProjectResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new project using only Project Title & Description"
+)
+@router.post(
+    "/title",
+    response_model=APIResponse[ProjectResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new project using only Project Title & Description (alias)"
+)
+def create_project_from_title_endpoint(
+    req: TitleOnlyProjectRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Create project from Title only, generate starter codebase, and save metadata."""
+    project = ProjectService.create_project_from_title(
+        db=db,
+        user_id=current_user.id,
+        title=req.title,
+        description=req.description,
+        language=req.language
+    )
+    return APIResponse(
+        message="Project created successfully from title with boilerplate starter codebase",
+        data=ProjectResponse.model_validate(project)
+    )
+
 
 
 @router.post(
@@ -28,6 +62,12 @@ router = APIRouter(prefix="/projects", tags=["Projects & Repository Imports"])
     response_model=APIResponse[ProjectResponse],
     status_code=status.HTTP_201_CREATED,
     summary="Upload project source code via ZIP archive"
+)
+@router.post(
+    "/upload",
+    response_model=APIResponse[ProjectResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Upload project source code via ZIP archive (alias)"
 )
 async def upload_project_zip(
     file: UploadFile = FastAPIFile(...),
@@ -88,6 +128,12 @@ async def upload_project_zip(
     status_code=status.HTTP_201_CREATED,
     summary="Import repository from public GitHub URL"
 )
+@router.post(
+    "/github",
+    response_model=APIResponse[ProjectResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Import repository from public GitHub URL (alias)"
+)
 async def import_github_repository(
     import_in: GitHubImportRequest,
     current_user: User = Depends(get_current_active_user),
@@ -98,7 +144,7 @@ async def import_github_repository(
     project_title = import_in.title if import_in.title else f"{owner}/{repo}"
 
     # Verify repository metadata first
-    repo_meta = await GitHubService.fetch_repo_metadata(owner, repo)
+    repo_meta = await GitHubService.fetch_repo_metadata(owner, repo, access_token=import_in.github_token)
 
     # Create project record
     project = ProjectService.create_project(
@@ -112,7 +158,7 @@ async def import_github_repository(
     project_dir = os.path.join(settings.UPLOAD_DIR, project.id)
 
     # Download and extract archive
-    await GitHubService.download_and_extract_repo(owner, repo, project_dir)
+    await GitHubService.download_and_extract_repo(owner, repo, project_dir, access_token=import_in.github_token)
 
     # Process and save repository
     updated_project = ProjectService.process_and_save_repository(db, project.id, project_dir)
@@ -162,16 +208,36 @@ def get_project_details(
 
     recent_files = [FileResponse.model_validate(f) for f in files[:10]]
 
+    # Get latest review if available
+    review = ReviewService.get_review_by_id_or_project(db, project_id)
+    latest_review_dict = None
+    if review:
+        latest_review_dict = {
+            "id": review.id,
+            "overall_score": review.overall_score,
+            "grade": review.grade,
+            "summary": review.summary,
+            "component_scores": {
+                "maintainability": review.maintainability_score,
+                "security": review.security_score,
+                "performance": review.performance_score,
+                "readability": review.readability_score,
+            },
+            "created_at": review.created_at.isoformat() if review.created_at else None
+        }
+
     summary = ProjectSummaryResponse(
         project=ProjectResponse.model_validate(project),
         framework=framework,
         file_count=project.total_files,
         lines_of_code=project.total_lines_of_code,
         languages=project.detected_languages,
-        recent_files=recent_files
+        recent_files=recent_files,
+        latest_review=latest_review_dict
     )
 
     return APIResponse(data=summary)
+
 
 
 @router.get(

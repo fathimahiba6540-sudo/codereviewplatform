@@ -39,6 +39,8 @@ EXTENSION_LANGUAGE_MAP = {
     ".xml": "XML",
     ".md": "Markdown",
     ".sh": "Shell",
+    ".kt": "Kotlin",
+    ".swift": "Swift",
     ".bat": "Batch",
     ".ps1": "PowerShell",
     ".sql": "SQL",

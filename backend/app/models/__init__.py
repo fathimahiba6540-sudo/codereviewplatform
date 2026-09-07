@@ -3,6 +3,8 @@ from backend.app.models.user import User
 from backend.app.models.project import Project, SourceType, ProjectStatus
 from backend.app.models.file import File
 from backend.app.models.review import Review
+from backend.app.models.comment import ReviewComment
+from backend.app.models.notification import Notification
 
 __all__ = [
     "TimestampMixin",
@@ -12,4 +14,6 @@ __all__ = [
     "ProjectStatus",
     "File",
     "Review",
+    "ReviewComment",
+    "Notification",
 ]

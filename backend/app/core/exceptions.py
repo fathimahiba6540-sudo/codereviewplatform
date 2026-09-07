@@ -43,6 +43,23 @@ class AlreadyExistsException(AppException):
             status_code=status.HTTP_409_CONFLICT
         )
 
+class BadRequestException(AppException):
+    def __init__(self, message: str = "Bad request"):
+        super().__init__(
+            message=message,
+            code="BAD_REQUEST",
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class ForbiddenException(AppException):
+    def __init__(self, message: str = "Access forbidden"):
+        super().__init__(
+            message=message,
+            code="FORBIDDEN",
+            status_code=status.HTTP_403_FORBIDDEN
+        )
+
 
 async def app_exception_handler(request: Request, exc: AppException):
     """Custom exception handler returning uniform JSON error responses."""

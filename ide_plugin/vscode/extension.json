@@ -1,0 +1,35 @@
+{
+  "name": "ai-code-review-plugin",
+  "displayName": "AI Code Review Assistant",
+  "description": "Trigger multi-agent AI code reviews directly from VS Code",
+  "version": "1.0.0",
+  "publisher": "AI-Code-Review",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:aiCodeReview.triggerReview"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiCodeReview.triggerReview",
+        "title": "AI Review: Analyze Current Workspace"
+      }
+    ],
+    "configuration": {
+      "title": "AI Code Review",
+      "properties": {
+        "aiCodeReview.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:8000/api/v1",
+          "description": "FastAPI Backend Endpoint"
+        }
+      }
+    }
+  }
+}
