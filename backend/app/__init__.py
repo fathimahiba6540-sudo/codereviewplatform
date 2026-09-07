@@ -1,1 +1,1 @@
-# FastAPI Application Package
+# app package initializer
